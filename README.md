@@ -15,12 +15,12 @@ Para esta actividad se crea:
     Se hizo mediante los siguientes comandos.
 ```bash
     # Windows
-    python -m venv venv
-    venv\Scripts\activate
+    python -m venv .venv
+    .venv\Scripts\activate
 
     # Linux/Mac
-    python -m venv venv
-    source venv/bin/activate
+    python -m venv .venv
+    source .venv/bin/activate
 ```
 
 ### 2. Is done:  Instalar dependencias
