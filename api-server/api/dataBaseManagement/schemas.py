@@ -19,10 +19,8 @@ class TaskResponse(BaseModel):
     contenido: str
     deadline: date
     completada: bool
-    fecha_creacion: datetime
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
-        # Permitir la conversión de objetos ORM a modelos Pydantic v2
         from_attributes = True
-        # Permitir la conversión de objetos ORM a modelos Pydantic v1
-        # orm_mode = True

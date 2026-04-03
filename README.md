@@ -11,7 +11,7 @@ Para esta actividad se crea:
 
 ### 1. Is done: Crear entorno virtual
     Se crea un entorno virtual de Python para la creación de la API de FastAPI
-    y su base de datos mediante la SQLite
+    y su base de datos mediante la postgres
     Se hizo mediante los siguientes comandos.
 ```bash
     # Windows
@@ -34,7 +34,7 @@ Para esta actividad se crea:
 
 ### 3. Is done: Como Ejecutar la aplicación API
 
-    Se crea una API con SQLite + SQLAlchemy 
+    Se crea una API con postgres + SQLAlchemy 
     para actualizar la tabla de tareas 
     para ejecutar la api puedes usar cualquiera de estos comandos:
 

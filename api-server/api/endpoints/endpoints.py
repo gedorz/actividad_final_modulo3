@@ -2,13 +2,11 @@ from fastapi import FastAPI,APIRouter,Depends, HTTPException, status
 from dataBaseManagement.dbManagement import get_db, init_db
 from dataBaseManagement.dbservices import TaskManager
 from dataBaseManagement.schemas import TaskCreate, TaskUpdate, TaskResponse
-from sqlalchemy.orm import Session
 from typing import List
 
 router = APIRouter()
 
 init_db() # Aseguramos la creación de tablas en el arranque
-get_db()  # Inicializar la base de datos
 
 def init_fastapi():
     description = """
@@ -24,16 +22,16 @@ def init_fastapi():
         - Python 3.8+
         - FastAPI
         - postgreSQL
-        - SQLAlchemy
+        - psycopg2
         - Pydantic
     ## Modelo de DB:
-        - TaskDB: id, titulo, contenido, deadline, completada, fecha_creacion
+        - TaskDB: id, titulo, contenido, status, deadline, created_at, updated_at
         - Pydantic: TaskCreate, TaskUpdate, TaskResponse (hereda orm_mode)
         - TaskManager con encapsulamiento + abstracción:  _clean_text() (normaliza / censura palabras malsonantes) 
     ## Notas:
         - El proyecto se desarrollará usando FastAPI, un framework moderno y rápido para construir APIs con Python.
         - Se implementarán endpoints para crear tareas, obtener detalles de tareas, marcar tareas como completadas y listar tareas caducadas.
-        - La persistencia de datos se realizará utilizando PostgreSQL a través de SQLAlchemy, lo que permitirá almacenar las tareas de manera eficiente.
+        - La persistencia de datos se realizará utilizando PostgreSQL, lo que permitirá almacenar las tareas de manera eficiente.
         - Se aplicarán principios de programación orientada a objetos para estructurar el código de manera modular y mantenible.
         - Se utilizarán modelos Pydantic para validar y serializar los datos de entrada y salida de la API.
         - Se implementa una clase TaskManager para encapsular la lógica de negocio relacionada con las tareas, incluyendo una función _clean_text() para normalizar o censurar palabras malsonantes en los títulos y contenidos de las tareas.   
@@ -50,13 +48,13 @@ def init_fastapi():
 
 # Endpoints de la API para crear una tarea
 @router.post("/tasks/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
-def crear_tarea(task: TaskCreate, db: Session = Depends(get_db)):
+def crear_tarea(task: TaskCreate, db=Depends(get_db)):
     manager = TaskManager(db)
     return manager.add_task(task)
     
 # cambiar el estado de una tarea a completada
 @router.put("/tasks/completar/{task_id}", response_model=TaskResponse)
-def marcar_completada(task_id: int, db: Session = Depends(get_db)):
+def marcar_completada(task_id: int, db=Depends(get_db)):
     manager = TaskManager(db)
     try:
         return manager.set_task_completed(task_id)
@@ -68,7 +66,7 @@ def marcar_completada(task_id: int, db: Session = Depends(get_db)):
 
 # Actualización de tarea (no requerida en los tests pero implementada para completar la API)
 @router.put("/tasks/{task_id}", response_model=TaskResponse, status_code=status.HTTP_202_ACCEPTED)
-def actualizar_tarea(task_id: int, task_update: TaskUpdate, db: Session = Depends(get_db)):
+def actualizar_tarea(task_id: int, task_update: TaskUpdate, db=Depends(get_db)):
     manager = TaskManager(db)
     try:
         return manager.update_task(task_id, task_update)
@@ -80,25 +78,25 @@ def actualizar_tarea(task_id: int, task_update: TaskUpdate, db: Session = Depend
 
 # Endpoint para listar todas las tareas    
 @router.get("/tasks/", response_model=List[TaskResponse])
-def listar_tareas(db: Session = Depends(get_db)):
+def listar_tareas(db=Depends(get_db)):
     manager = TaskManager(db)
     return manager.get_all_tasks()
 
 # Endpoint para listar tareas caducadas
 @router.get("/tasks/caducadas", response_model=List[TaskResponse])
-def obtener_tareas_caducadas(db: Session = Depends(get_db)):
+def obtener_tareas_caducadas(db=Depends(get_db)):
     manager = TaskManager(db)
     return manager.get_expired_tasks()
 
 # Endpoint para contar tareas caducadas
 @router.get("/tasks/caducadas/count")
-def contar_caducadas(db: Session = Depends(get_db)):
+def contar_caducadas(db=Depends(get_db)):
     manager = TaskManager(db)
     return {"overdue": manager.count_overdue()}
 
 # Endpoint para obtener detalles de una tarea específica
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
-def obtener_tarea(task_id: int, db: Session = Depends(get_db)):
+def obtener_tarea(task_id: int, db=Depends(get_db)):
     manager = TaskManager(db)
     try:
         return manager.get_task(task_id)
@@ -110,7 +108,7 @@ def obtener_tarea(task_id: int, db: Session = Depends(get_db)):
 
 # Endpoint para eliminar una tarea
 @router.delete("/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
-def borrar_tarea(task_id: int, db: Session = Depends(get_db)):
+def borrar_tarea(task_id: int, db=Depends(get_db)):
     manager = TaskManager(db)
     try:
         manager.delete_task(task_id)

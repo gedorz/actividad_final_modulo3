@@ -17,11 +17,12 @@ client = requests.Session()
 # Función para limpiar la base de datos antes de ejecutar los tests
 def clear_db():
     # Función para limpiar la base de datos antes de ejecutar los tests"""
-    from DataBaseManagement.dbManagement import get_db, TaskDB
-    db = next(get_db())
-    db.query(TaskDB).delete()
-    db.commit()
-    db.close()
+    from dataBaseManagement.dbManagement import get_postgres_connection
+
+    with get_postgres_connection() as db:
+        with db.cursor() as cursor:
+            cursor.execute("DELETE FROM tasks")
+        db.commit()
 
 # Funcion para crear una tarea deacuerdo a un payload dado y devolver la respuesta de la
 # API en formato json, junto con el payload utilizado para la creación
@@ -70,8 +71,7 @@ def test_actualizar_tarea():
         "titulo": "Titulo Actualizado",
         "contenido": f"Contenido actualizado {datetime.now().isoformat()}",
         "deadline": str(date.today() + timedelta(days=8)),
-        "completada": True,
-        "fecha_creacion": datetime.now().isoformat()
+        "completada": True
     }
     response = client.put(f"{URL}/tasks/{taskID}", json=update_payload )
     assert response.status_code == 202, f"Expected status code 202, got {response.status_code}"
