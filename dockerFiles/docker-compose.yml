@@ -1,7 +1,7 @@
 services:
     nginx:
         image: nginx:alpine
-        container_name: nginx_proxy
+        container_name: nginx_proxy_m3
         environment:
             - TZ=${TZ}
             - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
@@ -17,7 +17,7 @@ services:
         networks: [web]
     postgres:
         image: postgres:15-alpine
-        container_name: dbPostgres
+        container_name: dbserverpostgres_m3
         restart: unless-stopped
         environment:
             - TZ=${TZ}
@@ -33,7 +33,7 @@ services:
         networks: [web]
     api:
         build: ../api-server
-        container_name: fastapi
+        container_name: fastapi_m3
         environment:
             - TZ=${TZ}
             - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
@@ -42,7 +42,7 @@ services:
         volumes:
             - ../api-server/api:/app
             - api_data:/app/data
-        command: uvicorn app:app --host 0.0.0.0 --port 8000 --root-path=/api --reload    
+        command: uvicorn main:app --host 0.0.0.0 --port 8000 --root-path=/api --reload    
         extra_hosts:
             - "host.docker.internal:host-gateway"
         restart: unless-stopped
