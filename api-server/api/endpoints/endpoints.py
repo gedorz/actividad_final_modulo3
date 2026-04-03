@@ -1,7 +1,7 @@
 from fastapi import FastAPI,APIRouter,Depends, HTTPException, status
-from DataBaseManagement.dbManagement import get_db, init_db
-from DataBaseManagement.dbservices import TaskManager
-from DataBaseManagement.schemas import TaskCreate, TaskUpdate, TaskResponse
+from dataBaseManagement.dbManagement import get_db, init_db
+from dataBaseManagement.dbservices import TaskManager
+from dataBaseManagement.schemas import TaskCreate, TaskUpdate, TaskResponse
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -12,7 +12,7 @@ get_db()  # Inicializar la base de datos
 
 def init_fastapi():
     description = """
-    Actividad final del módulo 2 - Programación Avanzada. 
+    Actividad final del módulo 3 - Contenedores y Virtualización. 
 
     ## Objetivos de aprendizaje:
         1) Aplicar principios de programación orientada a objetos y desarrollar código que se englobe en este paradigma de programación.
@@ -23,7 +23,9 @@ def init_fastapi():
     ## Tecnologías utilizadas:
         - Python 3.8+
         - FastAPI
-        - Persistencia SQLite + SQLAlchemy (sqlite:///./tasks.db)
+        - postgreSQL
+        - SQLAlchemy
+        - Pydantic
     ## Modelo de DB:
         - TaskDB: id, titulo, contenido, deadline, completada, fecha_creacion
         - Pydantic: TaskCreate, TaskUpdate, TaskResponse (hereda orm_mode)
@@ -31,7 +33,7 @@ def init_fastapi():
     ## Notas:
         - El proyecto se desarrollará usando FastAPI, un framework moderno y rápido para construir APIs con Python.
         - Se implementarán endpoints para crear tareas, obtener detalles de tareas, marcar tareas como completadas y listar tareas caducadas.
-        - La persistencia de datos se realizará utilizando SQLite a través de SQLAlchemy, lo que permitirá almacenar las tareas de manera eficiente.
+        - La persistencia de datos se realizará utilizando PostgreSQL a través de SQLAlchemy, lo que permitirá almacenar las tareas de manera eficiente.
         - Se aplicarán principios de programación orientada a objetos para estructurar el código de manera modular y mantenible.
         - Se utilizarán modelos Pydantic para validar y serializar los datos de entrada y salida de la API.
         - Se implementa una clase TaskManager para encapsular la lógica de negocio relacionada con las tareas, incluyendo una función _clean_text() para normalizar o censurar palabras malsonantes en los títulos y contenidos de las tareas.   
