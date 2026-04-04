@@ -1,0 +1,24 @@
+{
+    "pgsql.connections": [
+        {
+            "id": "F2C618C0-0664-410B-BD48-8D0A962A6F39",
+            "groupId": "3C685DC8-2C7A-4400-873A-DC47927EF34E",
+            "authenticationType": "SqlLogin",
+            "connectTimeout": "5",
+            "applicationName": "vscode-pgsql",
+            "clientEncoding": "utf8",
+            "sslmode": "disable",
+            "sshSavePassword": true,
+            "savePassword": true,
+            "sslRootCertMode": "none",
+            "server": "localhost",
+            "user": "taskmanageruser",
+            "password": "",
+            "database": "dbtaskmanager",
+            "profileName": "postgres_m3",
+            "port": "5432",
+            "expiresOn": 0,
+            "sshPassword": ""
+        }
+    ]
+}

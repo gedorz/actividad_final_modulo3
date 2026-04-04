@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Any, Generator
@@ -5,6 +6,9 @@ from typing import Any, Generator
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
+
+
+logger = logging.getLogger("api.db")
 
 
 def _get_env(*keys: str, default: str) -> str:
@@ -16,11 +20,17 @@ def _get_env(*keys: str, default: str) -> str:
 
 
 def get_postgres_connection():
+    host = _get_env("POSTGRES_HOST", "DB_POSTGRESDB_HOST", default="postgres")
+    port = int(_get_env("POSTGRES_PORT", "DB_POSTGRESDB_PORT", default="5432"))
+    db_name = _get_env("POSTGRES_DB_NAME", "DB_POSTGRESDB_DATABASE", default="dbtaskmanager")
+    user = _get_env("POSTGRES_USER_NAME", "DB_POSTGRESDB_USER", default="taskmanageruser")
+
+    logger.info("event=db_connect host=%s port=%s db=%s user=%s", host, port, db_name, user)
     return psycopg2.connect(
-        host=_get_env("POSTGRES_HOST", "DB_POSTGRESDB_HOST", default="postgres"),
-        port=int(_get_env("POSTGRES_PORT", "DB_POSTGRESDB_PORT", default="5432")),
-        dbname=_get_env("POSTGRES_DB_NAME", "DB_POSTGRESDB_DATABASE", default="dbtaskmanager"),
-        user=_get_env("POSTGRES_USER_NAME", "DB_POSTGRESDB_USER", default="taskmanageruser"),
+        host=host,
+        port=port,
+        dbname=db_name,
+        user=user,
         password=_get_env("POSTGRES_PASSWORD_VALUE", "DB_POSTGRESDB_PASSWORD", default="Qazwsx12"),
     )
 
@@ -41,6 +51,7 @@ def init_db() -> None:
         with connection.cursor() as cursor:
             cursor.execute(query)
         connection.commit()
+    logger.info("event=init_db table=tasks status=ready")
 
 
 def get_db() -> Generator[Any, None, None]:
@@ -72,6 +83,8 @@ def insert_record(table: str, data: dict[str, Any]) -> dict[str, Any]:
             created_row = cursor.fetchone()
         connection.commit()
 
+    logger.info("event=db_insert table=%s created=%s", table, bool(created_row))
+
     return dict(created_row) if created_row else {}
 
 
@@ -86,6 +99,8 @@ def get_record_by_id(table: str, record_id: Any, id_column: str = "id") -> dict[
             cursor.execute(query, [record_id])
             row = cursor.fetchone()
 
+    logger.info("event=db_get_by_id table=%s id_column=%s found=%s", table, id_column, bool(row))
+
     return dict(row) if row else None
 
 
@@ -96,6 +111,8 @@ def get_all_records(table: str) -> list[dict[str, Any]]:
         with connection.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query)
             rows = cursor.fetchall()
+
+    logger.info("event=db_get_all table=%s count=%s", table, len(rows))
 
     return [dict(row) for row in rows]
 
@@ -111,6 +128,8 @@ def delete_record(table: str, record_id: Any, id_column: str = "id") -> bool:
             cursor.execute(query, [record_id])
             deleted = cursor.fetchone()
         connection.commit()
+
+    logger.info("event=db_delete table=%s id_column=%s deleted=%s", table, id_column, bool(deleted))
 
     return bool(deleted)
 
@@ -129,6 +148,8 @@ def get_expired_tasks() -> list[dict[str, Any]]:
             cursor.execute(query, [datetime.now(timezone.utc)])
             rows = cursor.fetchall()
 
+    logger.info("event=db_get_expired_tasks count=%s", len(rows))
+
     return [dict(row) for row in rows]
 
 
@@ -145,6 +166,8 @@ def count_overdue_tasks() -> int:
         with connection.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query, [datetime.now(timezone.utc)])
             row = cursor.fetchone()
+
+    logger.info("event=db_count_overdue overdue=%s", int(row["overdue"]) if row else 0)
 
     return int(row["overdue"]) if row else 0
 
@@ -178,5 +201,7 @@ def update_record(table: str, record_id: Any, data: dict[str, Any], id_column: s
             cursor.execute(query, [*data.values(), record_id])
             updated_row = cursor.fetchone()
         connection.commit()
+
+    logger.info("event=db_update table=%s id_column=%s updated=%s", table, id_column, bool(updated_row))
 
     return dict(updated_row) if updated_row else None

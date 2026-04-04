@@ -38,7 +38,7 @@ services:
             - TZ=${TZ}
             - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
         ports:
-            - "0.0.0.0:8001:8000"
+            - "0.0.0.0:8080:8000"
         volumes:
             - ../api-server/api:/app
             - api_data:/app/data
