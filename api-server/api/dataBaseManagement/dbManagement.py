@@ -74,6 +74,8 @@ def get_postgres_connection_server(host:str):
     password = _get_env("POSTGRES_PASSWORD_VALUE", "DB_POSTGRESDB_PASSWORD", default="Qazwsx12")
     return _connect_with_retries(host, port, db_name, user, password)
 
+# Crea la tabla "tasks" en la base de datos si no existe, con las columnas id, titulo, contenido, completada, deadline, created_at y updated_at. La columna id es una clave primaria autoincremental, titulo es un campo de texto obligatorio, contenido es un campo de texto opcional, completada es un campo booleano que indica si la tarea está completada o no (por defecto es false), deadline es un campo de fecha y hora opcional que indica la fecha límite para completar la tarea, created_at es un campo de fecha y hora que se establece automáticamente con la fecha y hora actual cuando se crea la tarea, y updated_at es un campo de fecha y hora que se establece automáticamente con la fecha y hora actual cada vez que se actualiza la tarea.
+# si el script de inicio falla al crear el contenedor de postgres 
 def init_db() -> None:
     query = """
     CREATE TABLE IF NOT EXISTS tasks (
@@ -92,7 +94,7 @@ def init_db() -> None:
         connection.commit()
     logger.info("event=init_db table=tasks status=ready")
 
-
+# Carga la base de datos 
 def get_db() -> Generator[Any, None, None]:
     connection = get_postgres_connection()
     try:
@@ -100,7 +102,12 @@ def get_db() -> Generator[Any, None, None]:
     finally:
         connection.close()
 
-
+# IS done: Funciones para el manejo de los registros de la tabla "tasks": 
+# insert_record, get_record_by_id, get_all_records, 
+# delete_record, get_expired_tasks, count_overdue_tasks y update_record. 
+# Estas funciones deben utilizar consultas SQL parametrizadas para evitar 
+# inyecciones SQL y deben manejar adecuadamente las conexiones a la base
+# de datos utilizando el contexto proporcionado por get_db().
 def insert_record(table: str, data: dict[str, Any]) -> dict[str, Any]:
     if not data:
         raise ValueError("El cuerpo 'data' no puede estar vacio.")
@@ -210,7 +217,10 @@ def count_overdue_tasks() -> int:
 
     return int(row["overdue"]) if row else 0
 
-
+# Actualiza un registro en la tabla especificada por el id_column (por defecto "id") 
+# con los datos proporcionados en el diccionario data.
+# id_column se utiliza para identificar el registro a actualizar. 
+# La función devuelve el registro actualizado como un diccionario o None si no se encontró ningún registro con el id especificado. Si el cuerpo data está vacío, se lanza un ValueError. 
 def update_record(table: str, record_id: Any, data: dict[str, Any], id_column: str = "id") -> dict[str, Any] | None:
     if record_id is None:
         raise ValueError("El campo 'id' es obligatorio.")
