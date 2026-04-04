@@ -3,6 +3,7 @@ import json
 import os
 from dotenv import load_dotenv
 from datetime import datetime, date, timedelta
+from dataBaseManagement.dbManagement import get_postgres_connection_server
 
 # Este un test para validar la funcionalidad de la API de gestión de tareas implementada con FastAPI.
 # El test incluye casos para crear, actualizar, obtener, marcar como completada, eliminar tareas, así como para obtener tareas caducadas y manejar casos de datos incorrectos.
@@ -10,16 +11,13 @@ from datetime import datetime, date, timedelta
 
 load_dotenv()  # Cargar variables de entorno desde el archivo .env
 
-database_path = os.getenv("DATABASE_URL", "sqlite:///./tasks.db")
-URL = "http://localhost:8000"
+URL = "http://localhost:8080"
+
 client = requests.Session()
 
 # Función para limpiar la base de datos antes de ejecutar los tests
 def clear_db():
-    # Función para limpiar la base de datos antes de ejecutar los tests"""
-    from dataBaseManagement.dbManagement import get_postgres_connection
-
-    with get_postgres_connection() as db:
+    with get_postgres_connection_server(host="localhost") as db:
         with db.cursor() as cursor:
             cursor.execute("DELETE FROM tasks")
         db.commit()

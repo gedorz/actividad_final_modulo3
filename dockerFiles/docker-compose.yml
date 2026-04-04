@@ -28,12 +28,21 @@ services:
         volumes:
             - postgres_data:/var/lib/postgresql/data
             - ${LOCAL_FILES_SCRIPT}:/docker-entrypoint-initdb.d
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} || exit 1"]
+            interval: 5s
+            timeout: 5s
+            retries: 12
+            start_period: 5s
         ports:
             - "5432:5432"
         networks: [web]
     api:
         build: ../api-server
         container_name: fastapi_m3
+        depends_on:
+            postgres:
+                condition: service_healthy
         environment:
             - TZ=${TZ}
             - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}

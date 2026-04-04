@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from endpoints.endpoints import init_fastapi, router
+from dataBaseManagement.dbManagement import init_db
 
 # IS done: Modifica la configuración de logging para que los mensajes de error de validación se registren con un nivel de advertencia (warning) en lugar de error (error). Esto permitirá que los errores de validación se destaquen sin interrumpir el flujo normal del programa.
 # define la fecha y hora en el formato deseado, por ejemplo: "2024-06-01 12:00:00"
@@ -25,6 +26,13 @@ logger = logging.getLogger("api.main")
 # funcionalidades definidas en el router.
 app = init_fastapi()
 app.include_router(router)
+
+# Asguro que la base de datos esté inicializada al iniciar la aplicación,
+# llamando a la función init_db() en el evento de inicio (startup) de FastAPI.
+@app.on_event("startup")
+def on_startup_init_db() -> None:
+	logger.info("event=startup_init_db")
+	init_db()
 
 # IS done: Agrega un manejador de excepciones personalizado para capturar 
 # los errores de validación de solicitudes (RequestValidationError) y

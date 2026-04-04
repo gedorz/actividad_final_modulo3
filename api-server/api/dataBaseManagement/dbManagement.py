@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from datetime import datetime, timezone
 from typing import Any, Generator
 
@@ -19,21 +20,59 @@ def _get_env(*keys: str, default: str) -> str:
     return default
 
 
+def _connect_with_retries(host: str, port: int, db_name: str, user: str, password: str):
+    max_retries = int(_get_env("POSTGRES_CONNECT_RETRIES", default="10"))
+    retry_delay_seconds = float(_get_env("POSTGRES_RETRY_DELAY_SECONDS", default="1"))
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            logger.info(
+                "event=db_connect host=%s port=%s db=%s user=%s attempt=%s/%s",
+                host,
+                port,
+                db_name,
+                user,
+                attempt,
+                max_retries,
+            )
+            return psycopg2.connect(
+                host=host,
+                port=port,
+                dbname=db_name,
+                user=user,
+                password=password,
+            )
+        except psycopg2.OperationalError:
+            if attempt == max_retries:
+                raise
+
+            sleep_seconds = retry_delay_seconds * attempt
+            logger.warning(
+                "event=db_connect_retry host=%s db=%s attempt=%s/%s wait_seconds=%.2f",
+                host,
+                db_name,
+                attempt,
+                max_retries,
+                sleep_seconds,
+            )
+            time.sleep(sleep_seconds)
+
+
 def get_postgres_connection():
     host = _get_env("POSTGRES_HOST", "DB_POSTGRESDB_HOST", default="postgres")
     port = int(_get_env("POSTGRES_PORT", "DB_POSTGRESDB_PORT", default="5432"))
     db_name = _get_env("POSTGRES_DB_NAME", "DB_POSTGRESDB_DATABASE", default="dbtaskmanager")
     user = _get_env("POSTGRES_USER_NAME", "DB_POSTGRESDB_USER", default="taskmanageruser")
+    password = _get_env("POSTGRES_PASSWORD_VALUE", "DB_POSTGRESDB_PASSWORD", default="Qazwsx12")
+    return _connect_with_retries(host, port, db_name, user, password)
 
-    logger.info("event=db_connect host=%s port=%s db=%s user=%s", host, port, db_name, user)
-    return psycopg2.connect(
-        host=host,
-        port=port,
-        dbname=db_name,
-        user=user,
-        password=_get_env("POSTGRES_PASSWORD_VALUE", "DB_POSTGRESDB_PASSWORD", default="Qazwsx12"),
-    )
-
+def get_postgres_connection_server(host:str):
+    host = _get_env("POSTGRES_HOST", "DB_POSTGRESDB_HOST", default=host)
+    port = int(_get_env("POSTGRES_PORT", "DB_POSTGRESDB_PORT", default="5432"))
+    db_name = _get_env("POSTGRES_DB_NAME", "DB_POSTGRESDB_DATABASE", default="dbtaskmanager")
+    user = _get_env("POSTGRES_USER_NAME", "DB_POSTGRESDB_USER", default="taskmanageruser")
+    password = _get_env("POSTGRES_PASSWORD_VALUE", "DB_POSTGRESDB_PASSWORD", default="Qazwsx12")
+    return _connect_with_retries(host, port, db_name, user, password)
 
 def init_db() -> None:
     query = """

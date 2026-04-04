@@ -1,15 +1,13 @@
 import logging
 
 from fastapi import FastAPI,APIRouter,Depends, HTTPException, status
-from dataBaseManagement.dbManagement import get_db, init_db
+from dataBaseManagement.dbManagement import get_db
 from dataBaseManagement.dbservices import TaskManager
 from dataBaseManagement.schemas import TaskCreate, TaskUpdate, TaskResponse
 from typing import List
 
 router = APIRouter()
 logger = logging.getLogger("api.endpoints")
-
-init_db() # Aseguramos la creación de tablas en el arranque
 
 def init_fastapi():
     description = """
