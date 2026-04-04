@@ -46,7 +46,7 @@ def on_startup_init_db() -> None:
 async def request_validation_exception_handler(_request, exc: RequestValidationError):
 	logger.warning("event=request_validation_error errors=%s", exc.errors())
 	return JSONResponse(
-		status_code=400,
+		status_code=422,
 		content={
 			"detail": "Bad Request on json body",
 			"errors": exc.errors(),
