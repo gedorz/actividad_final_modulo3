@@ -12,7 +12,11 @@ from .dbManagement import (
 )
 from .schemas import TaskCreate, TaskUpdate
 
-
+# Clase TaskManager para gestionar las operaciones CRUD de tareas en la base de datos
+# y valiar eliminar palabras ofensivas en los campos de texto
+# y convertir las fechas a formato datetime con zona horaria UTC para su almacenamiento en la base de datos.
+# Además, se incluye la serialización de las tareas para convertir los campos de fecha a formato date al devolverlos en las respuestas de la API.
+# se valida los json sean correctos y se maneja los errores de validación con un logger para facilitar la identificación y solución de problemas relacionados con la validación de solicitudes en la API.
 class TaskManager:
     def __init__(self, _db: Any = None):
         # Se mantiene el parametro por compatibilidad con Depends(get_db).
