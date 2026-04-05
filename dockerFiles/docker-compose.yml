@@ -12,7 +12,7 @@ services:
             - ../html_nginx/web:/usr/share/nginx/html
             - nginx_config:/etc/nginx/conf.d
         depends_on:
-            - api
+            - apicontainer
         restart: unless-stopped
         networks: [web]
     postgres:
@@ -37,7 +37,7 @@ services:
         ports:
             - "5432:5432"
         networks: [web]
-    api:
+    apicontainer:
         build: ../api-server
         container_name: fastapi_m3
         depends_on:
@@ -51,7 +51,7 @@ services:
         volumes:
             - ../api-server/api:/app
             - api_data:/app/data
-        command: uvicorn main:app --host 0.0.0.0 --port 8000 --root-path=/api --reload    
+        command: uvicorn main:app --host 0.0.0.0 --port 8000 --root-path=/apiup --reload    
         extra_hosts:
             - "host.docker.internal:host-gateway"
         restart: unless-stopped
